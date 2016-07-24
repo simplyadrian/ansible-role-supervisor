@@ -4,7 +4,7 @@
   yum:
     name: supervisor
     state: present
-  when: ansible_os_family == "Redhat"
+  when: ansible_os_family == "RedHat"
 
 - name: install supervisor for Debian
   apt:
