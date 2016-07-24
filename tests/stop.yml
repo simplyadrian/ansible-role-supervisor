@@ -1,0 +1,22 @@
+## testing: stopz
+- command: supervisorctl stop {{supervisor_program}}
+  register: cmdstop
+  #we will test idempotence explicitly, so we lie here
+  changed_when: false
+
+- command: supervisorctl stop {{supervisor_program}}
+  register: cmdstopidem
+  changed_when: cmdstopidem.stdout.find('stopped') != -1
+
+- wait_for: path={{item}} search_regex=ended
+  with_items:
+    - /tmp/status
+
+- command: supervisorctl status {{supervisor_program}}
+  register: processchk
+  changed_when: false
+
+- name: confirm supervisor status output for programz(stopped)
+  assert:
+    that:
+      - "'STOPPED' in  processchk.stdout"

@@ -1,0 +1,35 @@
+## testing: autostart
+- service: name=supervisor state=started
+  register: superstarted
+- command: supervisorctl start {{supervisor_program}}
+  register: startcmdoutput
+  changed_when: startcmdoutput.stdout.find('already') == -1
+
+- supervisorctl: name={{supervisor_program}} state=started
+  register: modout
+
+- wait_for: path={{item}} search_regex=started
+  with_items:
+    - /tmp/status
+
+- command: supervisorctl status {{supervisor_program}}
+  register: processchk
+  changed_when: false
+
+- name: confirm supervisor status output for programz(starting or running)
+  assert:
+    that:
+      - "'STARTING' in processchk.stdout or 'RUNNING' in processchk.stdout"
+
+- name: confirm supervisor was already running
+# We didn't start the fire / It was always burning / Since the world's been turning
+  assert:
+    that:
+      - "not superstarted.changed | bool"
+
+- name: confirm the module & command calls didn't start the program ( it was to autostart )
+# We didn't start the fire / No we didn't light it / But we tried to fight it
+  assert:
+    that:
+      - "not modout.changed | bool"
+      - "not startcmdoutput.changed | bool" 

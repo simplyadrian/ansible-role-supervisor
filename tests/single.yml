@@ -1,0 +1,20 @@
+- command: grep started /tmp/status
+  register: statuschk
+  changed_when: false
+
+- command: supervisorctl stop testprog
+  changed_when: false
+
+- command: sleep 1
+  changed_when: false
+
+- command: grep ended /tmp/status
+  register: statuschk
+  changed_when: false
+
+- command: supervisorctl start testprog
+  changed_when: false
+
+- command: grep started /tmp/status
+  register: statuschk
+  changed_when: false

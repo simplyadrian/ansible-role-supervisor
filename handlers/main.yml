@@ -1,0 +1,10 @@
+---
+- name: restart supervisor
+  service:
+    name: supervisor
+    state: restarted
+    sleep: "{{ supervisor_restart_sleep | default(omit) }}"
+  register: supervisor_restarted
+  until: supervisor_restarted|success
+  retries: 1
+  delay: 5

@@ -1,0 +1,44 @@
+---
+
+- name: install supervisor for Redhat
+  yum:
+    name: supervisor
+    state: present
+  when: ansible_os_family == "Redhat"
+
+- name: install supervisor for Debian
+  apt:
+    name: "supervisor={{ supervisor_version }}"
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: create base logging directory
+  file:
+    state: directory
+    path: /var/log/supervisor
+
+- name: create logging directory for supervisor_program
+  file:
+    state: directory
+    path: /var/log/supervisor/{{supervisor_program}}
+
+- name: copy file into place
+  copy:
+    src: sigtrap.sh
+    dest: /usr/local/bin
+    owner: root
+    group: root
+    mode: 0755
+
+- name: generate config file
+  template:
+    src: supervisor.conf.j2
+    dest: "/etc/supervisor/conf.d/{{ supervisor_program }}.conf"
+  notify: restart supervisor
+  when: supervisor_restart_on_finish|bool
+
+- name: generate config if not condition
+  template:
+    src: supervisor.conf.j2
+    dest: "/etc/supervisor/conf.d/{{ supervisor_program }}.conf"
+  when: not supervisor_restart_on_finish|bool
